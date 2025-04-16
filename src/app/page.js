@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { API_URL } from "./libs/global";
 
-
 import Image from "next/image";
 
 import { Poppins } from "next/font/google";
@@ -23,28 +22,28 @@ const poppins = Poppins({
 
 export default function Home() {
   const useWindowSize = () => {
-      const [size, setSize] = useState({
-        width: 0,
-        height: 0,
-      });
-    
-      useEffect(() => {
-        const updateSize = () => {
-          setSize({
-            width: window.innerWidth,
-            height: window.innerHeight,
-          });
-        };
-    
-        updateSize(); // set initial size
-        window.addEventListener("resize", updateSize);
-        return () => window.removeEventListener("resize", updateSize);
-      }, []);
-    
-      return size;
-    };
-  
-    const { width, height } = useWindowSize();
+    const [size, setSize] = useState({
+      width: 0,
+      height: 0,
+    });
+
+    useEffect(() => {
+      const updateSize = () => {
+        setSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      };
+
+      updateSize(); // set initial size
+      window.addEventListener("resize", updateSize);
+      return () => window.removeEventListener("resize", updateSize);
+    }, []);
+
+    return size;
+  };
+
+  const { width, height } = useWindowSize();
   // console.log("Screen Width:", width, "Screen Height:", height);
   const router = useRouter();
   const [identifier, setIdentifier] = useState("");
@@ -55,14 +54,11 @@ export default function Home() {
     if (typeof window !== "undefined") {
       setLoading(true);
       try {
-        const response = await axios.post(
-          API_URL+"login",
-          {
-            identifier,
-            password,
-            role: "admin",
-          }
-        );
+        const response = await axios.post(API_URL + "login", {
+          identifier,
+          password,
+          role: "admin",
+        });
 
         // Store only identifier, password, and role in localStorage
         localStorage.setItem(
@@ -82,7 +78,6 @@ export default function Home() {
       }
     }
   };
-  
 
   return (
     <>
@@ -149,8 +144,6 @@ export default function Home() {
                 {loading ? "Logging in..." : "Login"}
               </button>
             </div>
-
-           
           </div>
 
           {/* Right Section - Image*/}
@@ -196,7 +189,7 @@ export default function Home() {
             <div className="w-full max-w-lg flex flex-col gap-8">
               <div className="relative w-full">
                 <label className="absolute left-4 -top-2 bg-white px-1 text-[#005585] text-sm">
-                Email / Phone / UHID
+                  Email / Phone / UHID
                 </label>
                 <input
                   type="text"
@@ -225,14 +218,13 @@ export default function Home() {
                 </button>
               </div>
 
-             
-
-              <button className="w-full bg-[#005585] text-lg text-white py-2.5 rounded-lg cursor-pointer" onClick={handleLogin}>
-              {loading ? "Logging in..." : "Login"}
+              <button
+                className="w-full bg-[#005585] text-lg text-white py-2.5 rounded-lg cursor-pointer"
+                onClick={handleLogin}
+              >
+                {loading ? "Logging in..." : "Login"}
               </button>
             </div>
-
-          
           </div>
 
           {/* Right Section - Image*/}

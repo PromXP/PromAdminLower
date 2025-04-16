@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { API_URL } from "../libs/global";
 
 import Image from "next/image";
 
