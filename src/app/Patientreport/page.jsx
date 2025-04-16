@@ -34,7 +34,6 @@ const poppins = Poppins({
 });
 
 const page = ({ isOpen, onClose, patient, doctor }) => {
-
   // const parsedUser = JSON.parse(patient);
 
   console.log("Surgery date " + patient?.surgery_scheduled?.date);
@@ -171,6 +170,21 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
       return;
     }
 
+    const selected = new Date(selectedDate);
+    const now = new Date();
+
+    // Remove time component to compare only date
+    selected.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+
+    if (selected < now) {
+      setWarning("Deadline cannot be a past date.");
+      setTimeout(() => {
+        setWarning("");
+      }, 2500);
+      return; // prevent submission
+    }
+
     setWarning(""); // Clear any existing warning
 
     const payload = {
@@ -185,16 +199,13 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     };
 
     try {
-      const response = await fetch(
-        API_URL+"add-questionnaire",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(API_URL + "add-questionnaire", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         const error = await response.json();
@@ -252,7 +263,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     }
 
     try {
-      const res = await fetch(API_URL+"send/", {
+      const res = await fetch(API_URL + "send/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -365,16 +376,13 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        API_URL+"update-doctor",
-        {
-          method: "PUT", // or "PUT" depending on your backend
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(API_URL + "update-doctor", {
+        method: "PUT", // or "PUT" depending on your backend
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -476,16 +484,13 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     ssetIsSubmitting(true);
 
     try {
-      const response = await fetch(
-        API_URL+"update-surgery-schedule",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const response = await fetch(API_URL + "update-surgery-schedule", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
@@ -554,8 +559,6 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
   }, [warning]);
 
   if (!isOpen) return null;
-
-
 
   return (
     <div
@@ -1201,8 +1204,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                     </p>
                     <p className="font-medium italic text-[#475467] text-sm">
                       {(() => {
-                        const rawDate =
-                        patient?.surgery_scheduled?.date;
+                        const rawDate = patient?.surgery_scheduled?.date;
 
                         if (!rawDate || rawDate === "0001-01-01") {
                           return "dd/mm/yyyy";
