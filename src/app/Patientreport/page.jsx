@@ -94,10 +94,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
 
   const optionsdrop = ["Pre Op", "6W", "3M", "6M", "1Y", "2Y"];
 
-  const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0]; // "yyyy-mm-dd"
-  });
+  const [selectedDate, setSelectedDate] = useState("");
   const dateInputRef = useRef(null);
 
   const handleSelectdrop = (option) => {
@@ -138,6 +135,11 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
           : [...prevSelected, item] // add if not
     );
   };
+
+  const handleSelectAll = () => {
+    setSelectedItems(allItems);
+  };
+  
 
   const handleClearAll = () => {
     setSelectedItems([]);
@@ -561,20 +563,15 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-40 "
-      style={{
-        backgroundColor: "rgba(0, 0, 0, 0.7)", // white with 50% opacity
-      }}
-    >
+
       <div
         className={`
-          min-h-screen w-full flex flex-col items-center
-          ${width < 950 ? "p-4 gap-4 justify-center" : "p-4 justify-center"}
+          h-full w-full flex flex-col items-center
+          ${width < 950 ? "gap-4 justify-center" : "justify-center"}
         `}
       >
         <div
-          className={`w-full bg-white rounded-2xl p-4  overflow-y-auto overflow-x-hidden max-h-[90vh] ${
+          className={`w-full bg-white rounded-2xl p-4  overflow-y-auto overflow-x-hidden h-full ${
             width < 1095 ? "flex flex-col gap-4" : ""
           }`}
         >
@@ -737,6 +734,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
               </div>
             </div>
           </div>
+
           <div
             className={`w-full  flex  ${
               width < 1095
@@ -752,6 +750,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
               <h2 className="font-bold text-black text-7">
                 ASSIGN QUESTIONNAIRES
               </h2>
+
               <div
                 className={`w-full flex  ${
                   width < 470
@@ -777,18 +776,18 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                   <div className="w-[35%] relative">
                     <div className="flex justify-center">
                       <button
-                        onClick={() => setOpendrop(!opendrop)}
-                        className="w-4/5 px-4 flex flex-row gap-2 items-center justify-center py-1 text-sm font-medium italic text-[#475467] rounded-md hover:bg-gray-100"
+                        // onClick={() => setOpendrop(!opendrop)}
+                        className="w-4/5 px-4 flex flex-row gap-2 items-center justify-center py-1 text-sm font-medium italic text-[#475467] rounded-md "
                       >
                         {selectedOptiondrop}
-                        {opendrop ? (
+                        {/* {opendrop ? (
                           <ChevronUpIcon className="w-4 h-4 text-[#475467]" />
                         ) : (
                           <ChevronDownIcon className="w-4 h-4 text-[#475467]" />
-                        )}
+                        )} */}
                       </button>
                     </div>
-                    {opendrop && (
+                    {/* {opendrop && (
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-28 bg-white border rounded-md shadow-lg z-50">
                         <ul className="py-1 text-sm text-gray-700">
                           {optionsdrop.map((option, index) => (
@@ -807,7 +806,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                           ))}
                         </ul>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
                 <div
@@ -842,6 +841,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                   </div>
                 </div>
               </div>
+
               <div
                 className={`w-full  overflow-y-auto border rounded-md ${
                   width < 1095 ? "h-36" : "h-24"
@@ -883,6 +883,14 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                     onClick={handleClearAll}
                   >
                     CLEAR ALL
+                  </p>
+                </div>
+                <div className="w-1/3 flex flex-row justify-between items-center">
+                  <p
+                    className="font-semibold italic text-[#475467] text-sm cursor-pointer"
+                    onClick={handleSelectAll}
+                  >
+                    SELECT ALL
                   </p>
                 </div>
                 <div className="w-1/3 flex flex-row gap-1 justify-center items-center">
@@ -1124,6 +1132,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
               </div>
             </div>
           </div>
+
           <div
             className={`w-full  flex  gap-4 ${
               width < 760 ? "h-fit" : "h-[45%] mt-2"
@@ -1286,7 +1295,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
           </div>
         </div>
       </div>
-    </div>
+
   );
 };
 

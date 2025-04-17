@@ -33,6 +33,8 @@ const poppins = Poppins({
 const useWindowSize = () => {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
+  
+
   useEffect(() => {
     // Make sure this runs only on client
     if (typeof window !== "undefined") {
@@ -51,9 +53,17 @@ const useWindowSize = () => {
   return size;
 };
 
-const page = () => {
+const page = ({ setSelectedPatientreport, setIsReportOpen, setDoctorListreport }) => {
   const { width, height } = useWindowSize();
   // console.log("Screen Width:", width, "Screen Height:", height);
+  const [doctorList, setDoctorList] = useState([]);
+
+  const handleViewReport = (patient) => {
+    setSelectedPatientreport(patient);
+    setIsReportOpen(true);
+    setDoctorListreport(doctorList)
+  };
+
 
   const [selected, setSelected] = useState(0);
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -72,9 +82,9 @@ const page = () => {
         const parsedUser = JSON.parse(storedUser);
         console.log("Retrieved user from localStorage:", parsedUser);
 
-        if (parsedUser.password === "doctor@123") {
-          setpassopen(true);
-        }
+        // if (parsedUser.password === "doctor@123") {
+        //   setpassopen(true);
+        // }
 
         // Attempt to log in again using the stored credentials
         const loginWithStoredUser = async () => {
@@ -146,7 +156,7 @@ const page = () => {
   const [isOpenrem, setIsOpenrem] = useState(false);
   const [isOpenacc, setIsOpenacc] = useState(false);
   const [isOpenaccdoc, setIsOpenaccdoc] = useState(false);
-  const [doctorList, setDoctorList] = useState([]);
+  
 
   const [selectedDate, setSelectedDate] = useState("Today");
   const dateInputRef = useRef(null);
@@ -615,10 +625,7 @@ const page = () => {
                             ? "w-full justify-center"
                             : ""
                       }`}
-                      onClick={() => {
-                        setSelectedPatient(patient);
-                        setIsOpen(true);
-                      }}
+                      onClick={() => handleViewReport(patient)}
                     >
                       <div className="text-sm font-medium border-b-2 text-[#476367] border-blue-gray-500 cursor-pointer">
                         Report
@@ -1093,12 +1100,12 @@ const page = () => {
         </div>
       </div>
 
-      <Patientreport
+      {/* <Patientreport
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         patient={selectedPatient}
         doctor={doctorList}
-      />
+      /> */}
 
       <Patientremainder
         isOpenrem={isOpenrem}
