@@ -64,31 +64,41 @@ const page = () => {
   const [selectedPatient, setSelectedPatientreport] = useState(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedSelected = sessionStorage.getItem("selectedTab");
+      const storedOpen = sessionStorage.getItem("isReportOpen");
+      const storedPatient = sessionStorage.getItem("selectedPatient");
+      const storedDoctors = sessionStorage.getItem("doctorListreport");
 
-  // useEffect(() => {
-  //   const storedSelected = localStorage.getItem("selectedTab");
-  //   const storedOpen = localStorage.getItem("isReportOpen");
-  
-  //   if (storedSelected !== null) {
-  //     setSelected(Number(storedSelected));
-  //   }
-  //   if (storedOpen === "true") {
-  //     setIsReportOpen(true);
-  //   }
-  // }, []);
+      if (storedSelected !== null) {
+        setSelected(Number(storedSelected));
+      }
+      if (storedOpen === "true") {
+        setIsReportOpen(true);
+      }
+      if (storedPatient) {
+        setSelectedPatientreport(JSON.parse(storedPatient));
+      }
+
+      if (storedDoctors) {
+        setDoctorListreport(JSON.parse(storedDoctors));
+      }
+    }
+  }, []);
 
   const [doctorListreport, setDoctorListreport] = useState([]); // if needed
 
-  // useEffect(() => {
-  //   if (typeof window !== "undefined") {
-  //     localStorage.setItem("selectedTab", selected);
-  //   }
-  // }, [selected]);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("selectedTab", selected);
+    }
+  }, [selected]);
 
   useEffect(() => {
-    // if (typeof window !== "undefined") {
-    //   localStorage.setItem("isReportOpen", isReportOpen);
-    // }
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("isReportOpen", isReportOpen);
+    }
     setSelected(isReportOpen ? 1 : 0);
   }, [isReportOpen]);
 

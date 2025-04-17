@@ -33,8 +33,6 @@ const poppins = Poppins({
 const useWindowSize = () => {
   const [size, setSize] = useState({ width: 0, height: 0 });
 
-  
-
   useEffect(() => {
     // Make sure this runs only on client
     if (typeof window !== "undefined") {
@@ -53,7 +51,11 @@ const useWindowSize = () => {
   return size;
 };
 
-const page = ({ setSelectedPatientreport, setIsReportOpen, setDoctorListreport }) => {
+const page = ({
+  setSelectedPatientreport,
+  setIsReportOpen,
+  setDoctorListreport,
+}) => {
   const { width, height } = useWindowSize();
   // console.log("Screen Width:", width, "Screen Height:", height);
   const [doctorList, setDoctorList] = useState([]);
@@ -61,9 +63,14 @@ const page = ({ setSelectedPatientreport, setIsReportOpen, setDoctorListreport }
   const handleViewReport = (patient) => {
     setSelectedPatientreport(patient);
     setIsReportOpen(true);
-    setDoctorListreport(doctorList)
+    setDoctorListreport(doctorList);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("selectedPatient", JSON.stringify(patient));
+      sessionStorage.setItem("doctorListreport", JSON.stringify(doctorList));
+      sessionStorage.setItem("isReportOpen", "true");
+      sessionStorage.setItem("selectedTab", "1");
+    }
   };
-
 
   const [selected, setSelected] = useState(0);
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -89,14 +96,11 @@ const page = ({ setSelectedPatientreport, setIsReportOpen, setDoctorListreport }
         // Attempt to log in again using the stored credentials
         const loginWithStoredUser = async () => {
           try {
-            const response = await axios.post(
-              API_URL+"login",
-              {
-                identifier: parsedUser.identifier,
-                password: parsedUser.password,
-                role: parsedUser.role, // Assuming role is stored and needed
-              }
-            );
+            const response = await axios.post(API_URL + "login", {
+              identifier: parsedUser.identifier,
+              password: parsedUser.password,
+              role: parsedUser.role, // Assuming role is stored and needed
+            });
 
             // Handle successful login response
             localStorage.setItem(
@@ -156,7 +160,6 @@ const page = ({ setSelectedPatientreport, setIsReportOpen, setDoctorListreport }
   const [isOpenrem, setIsOpenrem] = useState(false);
   const [isOpenacc, setIsOpenacc] = useState(false);
   const [isOpenaccdoc, setIsOpenaccdoc] = useState(false);
-  
 
   const [selectedDate, setSelectedDate] = useState("Today");
   const dateInputRef = useRef(null);
@@ -194,7 +197,7 @@ const page = ({ setSelectedPatientreport, setIsReportOpen, setDoctorListreport }
       if (!userData?.user?.email) return;
       try {
         const res = await axios.get(
-          API_URL+`patients/by-admin/${userData?.user?.email}`
+          API_URL + `patients/by-admin/${userData?.user?.email}`
         );
         const data = res.data;
 
@@ -213,14 +216,16 @@ const page = ({ setSelectedPatientreport, setIsReportOpen, setDoctorListreport }
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await fetch(API_URL+`getalldoctors`);
+        const res = await fetch(API_URL + `getalldoctors`);
         const data = await res.json();
 
         // Set doctor count (length of data array)
         setDoctorCount(data.length);
 
         // Format doctor list to show name and email
-        const formatted = data.map((doc) => `${doc.doctor_name} - ${doc.email}`);
+        const formatted = data.map(
+          (doc) => `${doc.doctor_name} - ${doc.email}`
+        );
         setDoctorList(formatted);
       } catch (error) {
         console.error("Error fetching doctors:", error);

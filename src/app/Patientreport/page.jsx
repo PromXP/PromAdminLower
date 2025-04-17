@@ -776,18 +776,18 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                   <div className="w-[35%] relative">
                     <div className="flex justify-center">
                       <button
-                        // onClick={() => setOpendrop(!opendrop)}
+                        onClick={() => setOpendrop(!opendrop)}
                         className="w-4/5 px-4 flex flex-row gap-2 items-center justify-center py-1 text-sm font-medium italic text-[#475467] rounded-md "
                       >
                         {selectedOptiondrop}
-                        {/* {opendrop ? (
+                        {opendrop ? (
                           <ChevronUpIcon className="w-4 h-4 text-[#475467]" />
                         ) : (
                           <ChevronDownIcon className="w-4 h-4 text-[#475467]" />
-                        )} */}
+                        )}
                       </button>
                     </div>
-                    {/* {opendrop && (
+                    {opendrop && (
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-28 bg-white border rounded-md shadow-lg z-50">
                         <ul className="py-1 text-sm text-gray-700">
                           {optionsdrop.map((option, index) => (
@@ -806,7 +806,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                           ))}
                         </ul>
                       </div>
-                    )} */}
+                    )}
                   </div>
                 </div>
                 <div
