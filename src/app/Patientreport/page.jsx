@@ -153,55 +153,92 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
 
   const [warning, setWarning] = useState("");
 
+  const getNextPeriod = () => {
+    const optionsdrop = ["Pre Op", "6W", "3M", "6M", "1Y", "2Y"];
+  
+    const allItems = [
+      "Oxford Knee Score (OKS)",
+      "Short Form - 12 (SF-12)",
+      "Knee Society Score (KSS)",
+      "Knee Injury and Ostheoarthritis Outcome Score, Joint Replacement (KOOS, JR)",
+      "Forgotten Joint Score (FJS)",
+    ];
+  
+    const questionnaire_assigned = patient?.questionnaire_assigned || [];
+  
+    const groupedByPeriod = optionsdrop.reduce((acc, period) => {
+      const assigned = questionnaire_assigned
+        .filter(q => q.period === period)
+        .map(q => q.name);
+      acc[period] = assigned;
+      return acc;
+    }, {});
+  
+    const currentPeriod = optionsdrop.find((period, index) => {
+      const assigned = groupedByPeriod[period] || [];
+      const allAssigned = allItems.every(item => assigned.includes(item));
+      const nextPeriod = optionsdrop[index + 1];
+      const nextAssigned = groupedByPeriod[nextPeriod] || [];
+      const nextAllAssigned = allItems.every(item => nextAssigned.includes(item));
+      return allAssigned && !nextAllAssigned;
+    });
+  
+    const nextPeriod = currentPeriod
+      ? optionsdrop[optionsdrop.indexOf(currentPeriod) + 1] || currentPeriod
+      : optionsdrop[0];
+  
+    return nextPeriod;
+  };
+  
   const handleAssign = async () => {
     if (qisSubmitting) {
-      showWarning("Please wait Assigning on progress...");
-      return; // Prevent double submission
+      showWarning("Please wait, assigning is in progress...");
+      return;
     }
-
-    if (!selectedOptiondrop || selectedOptiondrop === "Period") {
+  
+    const selected = new Date(selectedDate);
+    const now = new Date();
+    
+    // Remove time component to compare only date
+    selected.setHours(0, 0, 0, 0);
+    now.setHours(0, 0, 0, 0);
+  
+    if (selected < now) {
+      setWarning("Deadline cannot be a past date.");
+      setTimeout(() => {
+        setWarning(""); // Clear warning after 2.5 seconds
+      }, 2500);
+      return; // prevent submission
+    }
+  
+    if (!getNextPeriod() || getNextPeriod() === "Period") {
       setWarning("Please select a Time Period");
       return;
     }
-
+  
     if (selectedItems.length === 0) {
       setWarning("Please select at least one questionnaire.");
       return;
     }
-
+  
     if (!selectedDate) {
       setWarning("Please select a deadline.");
       return;
     }
-
-    const selected = new Date(selectedDate);
-    const now = new Date();
-
-    // Remove time component to compare only date
-    selected.setHours(0, 0, 0, 0);
-    now.setHours(0, 0, 0, 0);
-
-    if (selected < now) {
-      setWarning("Deadline cannot be a past date.");
-      setTimeout(() => {
-        setWarning("");
-      }, 2500);
-      return; // prevent submission
-    }
-
+  
     setWarning(""); // Clear any existing warning
-
+  
     const payload = {
       uhid: patient.uhid,
       questionnaire_assigned: selectedItems.map((item) => ({
         name: item,
-        period: selectedOptiondrop,
-        assigned_date: new Date().toISOString(), // current date-time in GMT
-        deadline: new Date(selectedDate).toISOString(), // selected date converted to GMT
+        period: getNextPeriod(),
+        assigned_date: new Date().toISOString(),
+        deadline: new Date(selectedDate).toISOString(),
         completed: 0,
       })),
     };
-
+  
     try {
       const response = await fetch(API_URL + "add-questionnaire", {
         method: "PUT",
@@ -210,23 +247,30 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
         },
         body: JSON.stringify(payload),
       });
-
+  
+      const result = await response.json();
+  
       if (!response.ok) {
-        const error = await response.json();
-        console.error("API Error:", error);
+        console.error("API Error:", result);
         setWarning("Something went wrong. Please try again.");
         return;
       }
-
-      const result = await response.json();
+  
+      // If no new questionnaires were added, don't show success or call remainder function
+      if (result.message === "No new questionnaire(s) to add" || result.message === "No changes made") {
+        setWarning(result.message);
+        return;
+      }
+  
+      // Success case
       console.log("Successfully assigned:", result);
       handleSendremainder();
-
+  
       // Optionally reset the fields
       setSelectedItems([]);
       setSelectedOptiondrop("Period");
       setSelectedDate("");
-
+  
       setWarning("Questionnaires successfully assigned!");
       setTimeout(() => setWarning(""), 3000);
     } catch (err) {
@@ -235,30 +279,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     }
   };
 
-  const [socket, setSocket] = useState(null);
-
-  useEffect(() => {
-    const ws = new WebSocket("wss://promapi.onrender.com/ws/message");
-
-    ws.onopen = () => {
-      console.log("✅ WebSocket connected");
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      console.log("📩 Message from server:", data);
-    };
-
-    ws.onclose = () => {
-      console.log("❌ WebSocket disconnected");
-    };
-
-    setSocket(ws);
-
-    return () => {
-      ws.close();
-    };
-  }, []);
+  const socket = useWebSocket();
 
   const handleSendremainder = async () => {
     if (!patient?.email) {
@@ -777,17 +798,12 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                   </div>
                   <div className="w-[35%] relative">
                     <div className="flex justify-center">
-                      <button
-                        // onClick={() => setOpendrop(!opendrop)}
-                        className="w-4/5 px-4 flex flex-row gap-2 items-center justify-center py-1 text-sm font-medium italic text-[#475467] rounded-md "
-                      >
-                        {selectedOptiondrop}
-                        {/* {opendrop ? (
-                          <ChevronUpIcon className="w-4 h-4 text-[#475467]" />
-                        ) : (
-                          <ChevronDownIcon className="w-4 h-4 text-[#475467]" />
-                        )} */}
-                      </button>
+                    <button
+  className="w-4/5 px-4 flex flex-row gap-2 items-center justify-center py-1 text-sm font-medium italic text-[#475467] rounded-md"
+>
+  {getNextPeriod()}
+</button>
+
                     </div>
                     {/* {opendrop && (
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-28 bg-white border rounded-md shadow-lg z-50">
