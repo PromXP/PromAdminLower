@@ -638,16 +638,16 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
       >
        
         <div
-          className={`w-full bg-white rounded-2xl p-4  overflow-y-auto overflow-x-hidden h-full ${
+          className={`w-full bg-white rounded-2xl px-4  overflow-y-auto overflow-x-hidden h-full ${
             width < 1095 ? "flex flex-col gap-4" : ""
           }`}
         >
           <div
-            className={`w-full bg-white  ${width < 760 ? "h-fit" : "h-[20%]"} `}
+            className={`w-full bg-white  ${width < 760 ? "h-fit" : "h-[15%]"} `}
           >
             <div
               className={`w-full rounded-lg flex ${
-                width < 760 ? "py-0" : "py-4"
+                width < 760 ? "py-0" : "py-2"
               }`}
             >
               <div className={`relative w-full`}>
@@ -806,12 +806,12 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
             className={`w-full  flex  ${
               width < 1095
                 ? "h-fit flex-col justify-between gap-8"
-                : "h-[35%] mb-2 flex-row"
+                : "h-[45%] flex-row"
             }`}
           >
             <div
               className={` bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col mr-1 justify-between  ${
-                width < 1095 ? "w-full  gap-2" : "w-2/5 gap-4"
+                width < 1095 ? "w-full  gap-2" : "w-2/5 gap-0"
               }`}
             >
               <h2 className="font-bold text-black text-7">
@@ -906,10 +906,10 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
 
               <div
                 className={`w-full  overflow-y-auto border rounded-md ${
-                  width < 1095 ? "h-36" : "h-24"
+                  width < 1095 ? "h-36" : "h-[65%]"
                 }`}
               >
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 h-full">
                   {allItems
                     .filter((item) =>
                       item.toLowerCase().includes(searchTerm.toLowerCase())
@@ -938,46 +938,44 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
                 </div>
               )}
 
-              <div className="w-full flex flex-row justify-center items-center">
-                <div className="w-1/3 flex flex-row justify-between items-center">
-                  <p
-                    className="font-semibold italic text-[#475467] text-sm cursor-pointer"
-                    onClick={handleClearAll}
-                  >
-                    CLEAR ALL
-                  </p>
-                </div>
-                <div className="w-1/3 flex flex-row justify-between items-center">
-                  <p
-                    className="font-semibold italic text-[#475467] text-sm cursor-pointer"
-                    onClick={handleSelectAll}
-                  >
-                    SELECT ALL
-                  </p>
-                </div>
-                <div className="w-1/3 flex flex-row gap-1 justify-center items-center">
-                  <p className="font-medium text-sm text-[#475467]">
-                    {" "}
-                    Selected
-                  </p>
-                  <p className="font-semibold test-sm text-black">
-                    {selectedItems.length}
-                  </p>
-                </div>
-                <div className="w-1/3 flex flex-row justify-end items-center">
-                  <p
-                    className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
-                    style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
-                    onClick={!qisSubmitting ? handleAssign : undefined}
-                  >
-                    {qisSubmitting ? "ASSIGNING..." : "ASSIGN"}
-                  </p>
-                </div>
-              </div>
+<div className="w-full flex flex-wrap md:flex-row justify-center items-center gap-y-3">
+  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-between items-center">
+    <p
+      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
+      onClick={handleClearAll}
+    >
+      CLEAR ALL
+    </p>
+  </div>
+  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-between items-center">
+    <p
+      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
+      onClick={handleSelectAll}
+    >
+      SELECT ALL
+    </p>
+  </div>
+  <div className="w-1/2 md:w-1/4 flex justify-center items-center gap-1">
+    <p className="font-medium text-sm text-[#475467]">Selected</p>
+    <p className="font-semibold text-sm text-black">
+      {selectedItems.length}
+    </p>
+  </div>
+  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-end items-center">
+    <p
+      className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
+      style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
+      onClick={!qisSubmitting ? handleAssign : undefined}
+    >
+      {qisSubmitting ? "ASSIGNING..." : "ASSIGN"}
+    </p>
+  </div>
+</div>
+
             </div>
             <div
               className={` bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col ml-1 mr-1 justify-between ${
-                width < 1095 ? "w-full gap-2" : "w-2/5 gap-4"
+                width < 1095 ? "w-full gap-2" : "w-2/5 gap-0"
               }`}
             >
               {showAlert && (
@@ -1002,7 +1000,7 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
               </div>
               <div
                 className={`w-full overflow-y-auto border rounded-md ${
-                  width < 1095 ? "h-36" : "h-24"
+                  width < 1095 ? "h-36" : "h-[65%]"
                 }`}
               >
                 <div className="flex flex-wrap gap-2">
