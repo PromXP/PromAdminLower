@@ -62,8 +62,7 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
   const { width, height } = useWindowSize();
   // console.log("Screen Width:", width, "Screen Height:", height);
 
-
-  console.log("Patient"+patient1?.uhid+" "+patient1?.password)
+  console.log("Patient" + patient1?.uhid + " " + patient1?.password);
 
   if (typeof window !== "undefined") {
     sessionStorage.setItem("uhid", patient1.uhid);
@@ -76,11 +75,10 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
     if (typeof window !== "undefined") {
       const uid = sessionStorage.getItem("uhid");
       const pass = sessionStorage.getItem("password");
-      console.log("user from localStorage1 :", uid+" "+pass);
+      console.log("user from localStorage1 :", uid + " " + pass);
 
       if (uid && pass) {
-
-        console.log("user from localStorage 2:", uid+" "+pass);
+        console.log("user from localStorage 2:", uid + " " + pass);
 
         // Attempt to log in again using the stored credentials
         const loginWithStoredUser = async () => {
@@ -132,7 +130,6 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
   const latestPeriod = getLatestPeriod(patient?.questionnaire_assigned);
   console.log("Latest period:", patient?.questionnaire_assigned);
 
-  
   const [opendrop, setOpendrop] = useState(false);
   const [selectedOptiondrop, setSelectedOptiondrop] = useState("Period");
 
@@ -183,7 +180,6 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
   const handleSelectAll = () => {
     setSelectedItems(allItems);
   };
-  
 
   const handleClearAll = () => {
     setSelectedItems([]);
@@ -197,7 +193,7 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
 
   const getNextPeriod = () => {
     const optionsdrop = ["Pre Op", "6W", "3M", "6M", "1Y", "2Y"];
-  
+
     const allItems = [
       "Oxford Knee Score (OKS)",
       "Short Form - 12 (SF-12)",
@@ -205,46 +201,48 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
       "Knee Injury and Ostheoarthritis Outcome Score, Joint Replacement (KOOS, JR)",
       "Forgotten Joint Score (FJS)",
     ];
-  
+
     const questionnaire_assigned = patient?.questionnaire_assigned || [];
-  
+
     const groupedByPeriod = optionsdrop.reduce((acc, period) => {
       const assigned = questionnaire_assigned
-        .filter(q => q.period === period)
-        .map(q => q.name);
+        .filter((q) => q.period === period)
+        .map((q) => q.name);
       acc[period] = assigned;
       return acc;
     }, {});
-  
+
     const currentPeriod = optionsdrop.find((period, index) => {
       const assigned = groupedByPeriod[period] || [];
-      const allAssigned = allItems.every(item => assigned.includes(item));
+      const allAssigned = allItems.every((item) => assigned.includes(item));
       const nextPeriod = optionsdrop[index + 1];
       const nextAssigned = groupedByPeriod[nextPeriod] || [];
-      const nextAllAssigned = allItems.every(item => nextAssigned.includes(item));
+      const nextAllAssigned = allItems.every((item) =>
+        nextAssigned.includes(item)
+      );
       return allAssigned && !nextAllAssigned;
     });
-  
+
     const nextPeriod = currentPeriod
       ? optionsdrop[optionsdrop.indexOf(currentPeriod) + 1] || currentPeriod
       : optionsdrop[0];
-  
+
     return nextPeriod;
   };
-  
+
   const handleAssign = async () => {
     if (qisSubmitting) {
       showWarning("Please wait, assigning is in progress...");
       return;
     }
-  
+
     const selected = new Date(selectedDate);
     const now = new Date();
-    
+
     // Remove time component to compare only date
     selected.setHours(0, 0, 0, 0);
     now.setHours(0, 0, 0, 0);
-  
+
     if (selected < now) {
       setWarning("Deadline cannot be a past date.");
       setTimeout(() => {
@@ -252,24 +250,24 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
       }, 2500);
       return; // prevent submission
     }
-  
+
     if (!getNextPeriod() || getNextPeriod() === "Period") {
       setWarning("Please select a Time Period");
       return;
     }
-  
+
     if (selectedItems.length === 0) {
       setWarning("Please select at least one questionnaire.");
       return;
     }
-  
+
     if (!selectedDate) {
       setWarning("Please select a deadline.");
       return;
     }
-  
+
     setWarning(""); // Clear any existing warning
-  
+
     const payload = {
       uhid: patient?.uhid,
       questionnaire_assigned: selectedItems.map((item) => ({
@@ -280,7 +278,7 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
         completed: 0,
       })),
     };
-  
+
     try {
       const response = await fetch(API_URL + "add-questionnaire", {
         method: "PUT",
@@ -289,30 +287,33 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
         },
         body: JSON.stringify(payload),
       });
-  
+
       const result = await response.json();
-  
+
       if (!response.ok) {
         console.error("API Error:", result);
         setWarning("Something went wrong. Please try again.");
         return;
       }
-  
+
       // If no new questionnaires were added, don't show success or call remainder function
-      if (result.message === "No new questionnaire(s) to add" || result.message === "No changes made") {
+      if (
+        result.message === "No new questionnaire(s) to add" ||
+        result.message === "No changes made"
+      ) {
         setWarning(result.message);
         return;
       }
-  
+
       // Success case
       console.log("Successfully assigned:", result);
       handleSendremainder();
-  
+
       // Optionally reset the fields
       setSelectedItems([]);
       setSelectedOptiondrop("Period");
       setSelectedDate("");
-  
+
       setWarning("Questionnaires successfully assigned!");
       setTimeout(() => setWarning(""), 3000);
     } catch (err) {
@@ -629,227 +630,225 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
 
   return (
     <>
-    {patient ? (
-      <div
-        className={`
+      {patient ? (
+        <div
+          className={`
           h-full w-full flex flex-col items-center
           ${width < 950 ? "gap-4 justify-center" : "justify-center"}
         `}
-      >
-       
-        <div
-          className={`w-full bg-white rounded-2xl px-4  overflow-y-auto overflow-x-hidden h-full ${
-            width < 1095 ? "flex flex-col gap-4" : ""
-          }`}
         >
           <div
-            className={`w-full bg-white  ${width < 760 ? "h-fit" : "h-[15%]"} `}
+            className={`w-full bg-white rounded-2xl px-4  overflow-y-auto overflow-x-hidden h-full ${
+              width < 1095 ? "flex flex-col gap-4" : ""
+            }`}
           >
             <div
-              className={`w-full rounded-lg flex ${
-                width < 760 ? "py-0" : "py-2"
-              }`}
+              className={`w-full bg-white  ${width < 760 ? "h-fit" : "h-[15%]"} `}
             >
-              <div className={`relative w-full`}>
-                <div className="absolute top-0 right-0">
-                  <Image
-                    className={`cursor-pointer ${
-                      width < 530 ? "w-4 h-4" : "w-4 h-4"
-                    }`}
-                    src={Closeicon}
-                    alt="close"
-                    onClick={() => {
-                      onClose();
-                      handleClearAll();
-                      handleClearAlldoc();
-                      handleClearAllsurgery();
-                    }}
-                  />
-                </div>
-                <div
-                  className={`flex gap-4  flex-col justify-center items-center ${
-                    width < 760 ? "" : "py-0"
-                  }`}
-                >
+              <div
+                className={`w-full rounded-lg flex ${
+                  width < 760 ? "py-0" : "py-2"
+                }`}
+              >
+                <div className={`relative w-full`}>
+                  <div className="absolute top-0 right-0">
+                    <Image
+                      className={`cursor-pointer ${
+                        width < 530 ? "w-4 h-4" : "w-4 h-4"
+                      }`}
+                      src={Closeicon}
+                      alt="close"
+                      onClick={() => {
+                        onClose();
+                        handleClearAll();
+                        handleClearAlldoc();
+                        handleClearAllsurgery();
+                      }}
+                    />
+                  </div>
                   <div
-                    className={`w-full flex gap-4 justify-center items-center ${
-                      width < 530
-                        ? "flex-col justify-center items-center"
-                        : "flex-row"
+                    className={`flex gap-4  flex-col justify-center items-center ${
+                      width < 760 ? "" : "py-0"
                     }`}
                   >
-                    <Image
-                      className={`rounded-full w-14 h-14`}
-                      src={Patientimg}
-                      alt="alex hales"
-                    />
-
                     <div
-                      className={`w-full flex items-center ${
-                        width < 760
-                          ? "flex-col gap-2 justify-center"
+                      className={`w-full flex gap-4 justify-center items-center ${
+                        width < 530
+                          ? "flex-col justify-center items-center"
                           : "flex-row"
                       }`}
                     >
+                      <Image
+                        className={`rounded-full w-14 h-14`}
+                        src={Patientimg}
+                        alt="alex hales"
+                      />
+
                       <div
-                        className={`flex  flex-col gap-3 ${
-                          width < 760 ? "w-full" : "w-2/5"
+                        className={`w-full flex items-center ${
+                          width < 760
+                            ? "flex-col gap-2 justify-center"
+                            : "flex-row"
                         }`}
                       >
                         <div
-                          className={`flex items-center gap-2 flex-row ${
-                            width < 530 ? "justify-center" : ""
+                          className={`flex  flex-col gap-3 ${
+                            width < 760 ? "w-full" : "w-2/5"
                           }`}
                         >
-                          <p
-                            className={`text-[#475467] font-poppins font-semibold text-base ${
-                              width < 530 ? "text-start" : ""
-                            }`}
-                          >
-                            Patient Name |
-                          </p>
-                          <p
-                            className={`text-black font-poppins font-bold text-base ${
-                              width < 530 ? "text-start" : ""
-                            }`}
-                          >
-                            {patient?.first_name + " " + patient?.last_name}
-                          </p>
-                        </div>
-                        <div
-                          className={`flex flex-row  ${
-                            width < 710 && width >= 530
-                              ? "w-full justify-between"
-                              : ""
-                          }`}
-                        >
-                          <p
-                            className={`font-poppins font-semibold text-sm text-[#475467] ${
-                              width < 530 ? "text-center" : "text-start"
-                            }
-                          w-1/2`}
-                          >
-                            {patient?.age}, {patient?.gender}
-                          </p>
                           <div
-                            className={`text-sm font-normal font-poppins text-[#475467] w-1/2 ${
-                              width < 530 ? "text-center" : ""
+                            className={`flex items-center gap-2 flex-row ${
+                              width < 530 ? "justify-center" : ""
                             }`}
                           >
-                            UHID {patient?.uhid}
+                            <p
+                              className={`text-[#475467] font-poppins font-semibold text-base ${
+                                width < 530 ? "text-start" : ""
+                              }`}
+                            >
+                              Patient Name |
+                            </p>
+                            <p
+                              className={`text-black font-poppins font-bold text-base ${
+                                width < 530 ? "text-start" : ""
+                              }`}
+                            >
+                              {patient?.first_name + " " + patient?.last_name}
+                            </p>
+                          </div>
+                          <div
+                            className={`flex flex-row  ${
+                              width < 710 && width >= 530
+                                ? "w-full justify-between"
+                                : ""
+                            }`}
+                          >
+                            <p
+                              className={`font-poppins font-semibold text-sm text-[#475467] ${
+                                width < 530 ? "text-center" : "text-start"
+                              }
+                          w-1/2`}
+                            >
+                              {patient?.age}, {patient?.gender}
+                            </p>
+                            <div
+                              className={`text-sm font-normal font-poppins text-[#475467] w-1/2 ${
+                                width < 530 ? "text-center" : ""
+                              }`}
+                            >
+                              UHID {patient?.uhid}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div
-                        className={`flex   ${
-                          width < 760 ? "w-full" : "w-3/5 justify-center"
-                        }
+                        <div
+                          className={`flex   ${
+                            width < 760 ? "w-full" : "w-3/5 justify-center"
+                          }
                       ${
                         width < 530
                           ? "flex-col gap-4 justify-center items-center"
                           : "flex-row"
                       }`}
-                      >
-                        <div
-                          className={` flex flex-col gap-3 ${
-                            width < 530
-                              ? "justify-center items-center w-full"
-                              : "w-[20%]"
-                          }`}
                         >
-                          <p className="text-[#475467] font-semibold text-5">
-                            BMI
-                          </p>
-                          <p className="text-[#04CE00] font-bold text-6">
-                            {patient?.bmi}
-                          </p>
-                        </div>
-                        <div
-                          className={` flex flex-col gap-3 ${
-                            width < 530
-                              ? "justify-center items-center w-full"
-                              : "w-[40%]"
-                          }`}
-                        >
-                          <p className="text-[#475467] font-semibold text-5">
-                            DOCTOR ASSIGNED
-                          </p>
-                          <p className="text-black font-bold text-6">
-                            {patient?.doctor_name ? patient?.doctor_name : "-"}
-                          </p>
-                        </div>
-                        <div
-                          className={` flex flex-col gap-3 ${
-                            width < 530
-                              ? "justify-center items-center w-full"
-                              : "w-[30%]"
-                          }`}
-                        >
-                          <p className="text-[#475467] font-semibold text-5">
-                            STATUS
-                          </p>
-                          <p className="text-[#FFB978] font-bold text-6">
-                            {patient?.current_status || "NOT YET UPDATED"}
-                          </p>
+                          <div
+                            className={` flex flex-col gap-3 ${
+                              width < 530
+                                ? "justify-center items-center w-full"
+                                : "w-[20%]"
+                            }`}
+                          >
+                            <p className="text-[#475467] font-semibold text-5">
+                              BMI
+                            </p>
+                            <p className="text-[#04CE00] font-bold text-6">
+                              {patient?.bmi}
+                            </p>
+                          </div>
+                          <div
+                            className={` flex flex-col gap-3 ${
+                              width < 530
+                                ? "justify-center items-center w-full"
+                                : "w-[40%]"
+                            }`}
+                          >
+                            <p className="text-[#475467] font-semibold text-5">
+                              DOCTOR ASSIGNED
+                            </p>
+                            <p className="text-black font-bold text-6">
+                              {patient?.doctor_name
+                                ? patient?.doctor_name
+                                : "-"}
+                            </p>
+                          </div>
+                          <div
+                            className={` flex flex-col gap-3 ${
+                              width < 530
+                                ? "justify-center items-center w-full"
+                                : "w-[30%]"
+                            }`}
+                          >
+                            <p className="text-[#475467] font-semibold text-5">
+                              STATUS
+                            </p>
+                            <p className="text-[#FFB978] font-bold text-6">
+                              {patient?.current_status || "NOT YET UPDATED"}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
+                    <div className="w-full bg-[#005585] h-[1.5px]" />
                   </div>
-                  <div className="w-full bg-[#005585] h-[1.5px]" />
                 </div>
               </div>
             </div>
-          </div>
 
-          <div
-            className={`w-full  flex  ${
-              width < 1095
-                ? "h-fit flex-col justify-between gap-8"
-                : "h-[45%] flex-row"
-            }`}
-          >
             <div
-              className={` bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col mr-1 justify-between  ${
-                width < 1095 ? "w-full  gap-2" : "w-2/5 gap-0"
+              className={`w-full  flex  ${
+                width < 1095
+                  ? "h-fit flex-col justify-between gap-8"
+                  : "h-[45%] flex-row"
               }`}
             >
-              <h2 className="font-bold text-black text-7">
-                ASSIGN QUESTIONNAIRES
-              </h2>
-
               <div
-                className={`w-full flex  ${
-                  width < 470
-                    ? "flex-col justify-center items-center gap-2"
-                    : "flex-row"
+                className={` bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col mr-1 justify-between  ${
+                  width < 1095 ? "w-full  gap-2" : "w-2/5 gap-0"
                 }`}
               >
+                <h2 className="font-bold text-black text-7">
+                  ASSIGN QUESTIONNAIRES
+                </h2>
+
                 <div
-                  className={`w-[75%] flex flex-row  ${
-                    width < 470 ? "justify-between" : "gap-4"
+                  className={`w-full flex  ${
+                    width < 470
+                      ? "flex-col justify-center items-center gap-2"
+                      : "flex-row"
                   }`}
                 >
-                  <div className="w-[40%] flex flex-row justify-between items-center">
-                    <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="px-2 py-1 text-sm w-full text-black outline-none"
-                    />
-                    <Image src={Search} alt="search" className="w-3 h-3 " />
-                  </div>
-                  <div className="w-[35%] relative">
-                    <div className="flex justify-center">
-                    <button
-  className="w-4/5 px-4 flex flex-row gap-2 items-center justify-center py-1 text-sm font-medium italic text-[#475467] rounded-md"
->
-  {getNextPeriod()}
-</button>
-
+                  <div
+                    className={`w-[75%] flex flex-row  ${
+                      width < 470 ? "justify-between" : "gap-4"
+                    }`}
+                  >
+                    <div className="w-[40%] flex flex-row justify-between items-center">
+                      <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="px-2 py-1 text-sm w-full text-black outline-none"
+                      />
+                      <Image src={Search} alt="search" className="w-3 h-3 " />
                     </div>
-                    {/* {opendrop && (
+                    <div className="w-[35%] relative">
+                      <div className="flex justify-center">
+                        <button className="w-4/5 px-4 flex flex-row gap-2 items-center justify-center py-1 text-sm font-medium italic text-[#475467] rounded-md">
+                          {getNextPeriod()}
+                        </button>
+                      </div>
+                      {/* {opendrop && (
                       <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-28 bg-white border rounded-md shadow-lg z-50">
                         <ul className="py-1 text-sm text-gray-700">
                           {optionsdrop.map((option, index) => (
@@ -869,499 +868,501 @@ const page = ({ isOpen, onClose, patient1, doctor }) => {
                         </ul>
                       </div>
                     )} */}
+                    </div>
                   </div>
-                </div>
-                <div
-                  className={`flex flex-row  items-center  cursor-pointer ${
-                    width < 470
-                      ? "w-full gap-4 justify-center"
-                      : "w-[25%] justify-between"
-                  }`}
-                  onClick={openDatePicker}
-                >
-                  <p className="font-medium italic text-[#475467] text-sm">
-                    {selectedDate
-                      ? new Date(selectedDate + "T00:00:00").toLocaleDateString(
-                          "en-GB",
-                          {
+                  <div
+                    className={`flex flex-row  items-center  cursor-pointer ${
+                      width < 470
+                        ? "w-full gap-4 justify-center"
+                        : "w-[25%] justify-between"
+                    }`}
+                    onClick={openDatePicker}
+                  >
+                    <p className="font-medium italic text-[#475467] text-sm">
+                      {selectedDate
+                        ? new Date(
+                            selectedDate + "T00:00:00"
+                          ).toLocaleDateString("en-GB", {
                             day: "2-digit",
                             month: "2-digit",
                             year: "numeric",
-                          }
-                        )
-                      : "DEADLINE"}
-                  </p>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      ref={dateInputRef}
-                      value={selectedDate} // <-- controlled input
-                      onChange={handleDateChange}
-                      className="absolute opacity-0 pointer-events-none"
-                    />
-                    <Image src={Calendar} className="w-3 h-3 " alt="Calendar" />
+                          })
+                        : "DEADLINE"}
+                    </p>
+                    <div className="relative">
+                      <input
+                        type="date"
+                        ref={dateInputRef}
+                        value={selectedDate} // <-- controlled input
+                        onChange={handleDateChange}
+                        className="absolute opacity-0 pointer-events-none"
+                      />
+                      <Image
+                        src={Calendar}
+                        className="w-3 h-3 "
+                        alt="Calendar"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div
-                className={`w-full  overflow-y-auto border rounded-md ${
-                  width < 1095 ? "h-36" : "h-[65%]"
-                }`}
-              >
-                <div className="flex flex-wrap gap-2 h-full">
-                  {allItems
-                    .filter((item) =>
-                      item.toLowerCase().includes(searchTerm.toLowerCase())
-                    )
-                    .map((item, index) => (
-                      <label
-                        key={index}
-                        className="flex items-center gap-2 font-medium  px-4 py-1 text-sm text-black cursor-pointer hover:bg-gray-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selectedItems.includes(item)}
-                          onChange={() => handleCheckboxChange(item)}
-                          className="accent-[#475467]"
-                        />
-                        {item}
-                      </label>
-                    ))}
-                </div>
-              </div>
-              {warning && (
-                <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50">
-                  <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg animate-fade-in-out">
-                    {warning}
-                  </div>
-                </div>
-              )}
-
-<div className="w-full flex flex-wrap md:flex-row justify-center items-center gap-y-3">
-  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-between items-center">
-    <p
-      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
-      onClick={handleClearAll}
-    >
-      CLEAR ALL
-    </p>
-  </div>
-  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-between items-center">
-    <p
-      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
-      onClick={handleSelectAll}
-    >
-      SELECT ALL
-    </p>
-  </div>
-  <div className="w-1/2 md:w-1/4 flex justify-center items-center gap-1">
-    <p className="font-medium text-sm text-[#475467]">Selected</p>
-    <p className="font-semibold text-sm text-black">
-      {selectedItems.length}
-    </p>
-  </div>
-  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-end items-center">
-    <p
-      className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
-      style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
-      onClick={!qisSubmitting ? handleAssign : undefined}
-    >
-      {qisSubmitting ? "ASSIGNING..." : "ASSIGN"}
-    </p>
-  </div>
-</div>
-
-            </div>
-            <div
-              className={` bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col ml-1 mr-1 justify-between ${
-                width < 1095 ? "w-full gap-2" : "w-2/5 gap-0"
-              }`}
-            >
-              {showAlert && (
-                <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50">
-                  <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg animate-fade-in-out">
-                    Please Select Doctor
-                  </div>
-                </div>
-              )}
-              <h2 className="font-bold text-black text-7">ASSIGN DOCTOR</h2>
-              <div className="w-full">
-                <div className="w-[40%] flex flex-row justify-between items-center">
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchTermdoc}
-                    onChange={(e) => setSearchTermdoc(e.target.value)}
-                    className="px-2 py-1 text-sm w-full text-black outline-none"
-                  />
-                  <Image src={Search} alt="search" className="w-3 h-3 " />
-                </div>
-              </div>
-              <div
-                className={`w-full overflow-y-auto border rounded-md ${
-                  width < 1095 ? "h-36" : "h-[65%]"
-                }`}
-              >
-                <div className="flex flex-wrap gap-2">
-                  {doctor
-                    .filter((item) =>
-                      item.toLowerCase().includes(searchTermdoc.toLowerCase())
-                    )
-                    .map((item, index) => {
-                      const [name, designation] = item.split(" - ");
-                      const isSelected = selectedDoctor === item;
-
-                      return (
+                <div
+                  className={`w-full  overflow-y-auto border rounded-md ${
+                    width < 1095 ? "h-36" : "h-[65%]"
+                  }`}
+                >
+                  <div className="flex flex-wrap gap-2 h-full">
+                    {allItems
+                      .filter((item) =>
+                        item.toLowerCase().includes(searchTerm.toLowerCase())
+                      )
+                      .map((item, index) => (
                         <label
                           key={index}
-                          onClick={() => handleCheckboxChangedoc(item)}
-                          className={`flex items-center gap-2 justify-center font-medium px-3 py-1 text-sm text-black cursor-pointer hover:bg-gray-50 flex-shrink-0 max-w-fit ${
-                            isSelected ? "bg-gray-100" : ""
-                          }`}
+                          className="flex items-center gap-2 font-medium  px-4 py-1 text-sm text-black cursor-pointer hover:bg-gray-50"
                         >
-                          <div className="w-4 h-4 border-2 rounded-full flex items-center justify-center border-[#475467] mt-1">
-                            {isSelected && (
-                              <div className="w-2 h-2 rounded-full bg-[#005585]" />
-                            )}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-semibold">{name}</span>
-                            <span className="text-xs text-gray-500">
-                              {designation}
-                            </span>
-                          </div>
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.includes(item)}
+                            onChange={() => handleCheckboxChange(item)}
+                            className="accent-[#475467]"
+                          />
+                          {item}
                         </label>
-                      );
-                    })}
+                      ))}
+                  </div>
                 </div>
-              </div>
-              <div className="w-full flex flex-row justify-center items-center">
-                <div className="w-1/2 flex flex-row justify-start items-center">
-                  <p
-                    className="font-semibold italic text-[#475467] text-sm cursor-pointer"
-                    onClick={handleClearAlldoc}
-                  >
-                    CLEAR SELECTION
-                  </p>
-                </div>
-                <div className="w-1/2 flex flex-row justify-end items-center">
-                  <p
-                    className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
-                    style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
-                    onClick={!isSubmitting ? handleAssigndoc : undefined}
-                  >
-                    {isSubmitting ? "ASSIGNING..." : "ASSIGN"}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div
-              className={`bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col ml-1 mr-1 justify-between ${
-                width < 1095 ? "w-full gap-4" : "w-1/5 gap-4"
-              }`}
-            >
-              <h2 className="font-bold text-black text-7 w-full text-center">
-                SURGERY SCHEDULER
-              </h2>
-              <div className="w-full flex flex-col gap-6">
-                <div
-                  className={`w-full flex flex-row  ${
-                    width < 1095 ? "gap-10" : ""
-                  }`}
-                >
-                  <div
-                    className={`flex flex-col ${
-                      width < 1095 ? "w-1/2 items-end" : "w-2/3"
-                    }`}
-                  >
-                    <p className="font-medium text-sm text-[#475467]">DATE</p>
-                    <p className="font-semibold text-sm italic text-[#475467]">
-                      {selectedDatesurgery
-                        ? selectedDatesurgery.split("-").reverse().join("/")
-                        : "dd/mm/yyyy"}
+                {warning && (
+                  <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50">
+                    <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg animate-fade-in-out">
+                      {warning}
+                    </div>
+                  </div>
+                )}
+
+                <div className="w-full flex flex-wrap md:flex-row justify-center items-center gap-y-3">
+                  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-between items-center">
+                    <p
+                      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
+                      onClick={handleClearAll}
+                    >
+                      CLEAR ALL
                     </p>
                   </div>
-                  <div
-                    className={`flex flex-col  relative gap-4 ${
-                      width < 1095
-                        ? "w-1/2 justify-center items-start"
-                        : "w-1/3 justify-center items-center"
-                    }`}
-                  >
-                    <input
-                      type="date"
-                      ref={dateInputRefsurgery}
-                      className="absolute opacity-0 pointer-events-none"
-                      onChange={handleDateChangesurgery}
-                    />
-                    <Image
-                      src={Bigcalendar}
-                      alt="clock"
-                      className="w-8 h-8 cursor-pointer"
-                      onClick={handleCalendarClick}
-                    />
-                  </div>
-                </div>
-                <div
-                  className={`w-full flex flex-row ${
-                    width < 1095 ? "gap-10" : ""
-                  }`}
-                >
-                  <div
-                    className={`flex flex-col ${
-                      width < 1095 ? "w-1/2 items-end" : "w-2/3"
-                    }`}
-                  >
-                    <p className="font-medium text-sm text-[#475467]">TIME</p>
-                    <p className="font-semibold text-sm italic text-[#475467]">
-                      {selectedTime ? selectedTime : "HH:MM"}
+                  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-between items-center">
+                    <p
+                      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
+                      onClick={handleSelectAll}
+                    >
+                      SELECT ALL
                     </p>
                   </div>
-                  <div
-                    className={`flex flex-col relative gap-4 ${
-                      width < 1095
-                        ? "w-1/2 justify-center items-start"
-                        : "w-1/3 justify-center items-center"
-                    }`}
-                  >
-                    <input
-                      type="time"
-                      ref={timeInputRef}
-                      className="absolute opacity-0 pointer-events-none"
-                      onChange={handleTimeChange}
-                    />
-
-                    <Image
-                      src={Clock}
-                      alt="clock"
-                      className="w-8 h-8 cursor-pointer"
-                      onClick={handleClockClick}
-                    />
+                  <div className="w-1/2 md:w-1/4 flex justify-center items-center gap-1">
+                    <p className="font-medium text-sm text-[#475467]">
+                      Selected
+                    </p>
+                    <p className="font-semibold text-sm text-black">
+                      {selectedItems.length}
+                    </p>
+                  </div>
+                  <div className="w-1/2 md:w-1/4 flex justify-center md:justify-end items-center">
+                    <p
+                      className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
+                      style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
+                      onClick={!qisSubmitting ? handleAssign : undefined}
+                    >
+                      {qisSubmitting ? "ASSIGNING..." : "ASSIGN"}
+                    </p>
                   </div>
                 </div>
               </div>
-
-              {warning && (
-                <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50">
-                  <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg animate-fade-in-out">
-                    {warning}
-                  </div>
-                </div>
-              )}
               <div
-                className={`w-full flex flex-row justify-center items-center ${
-                  width < 1095 ? "gap-10" : ""
+                className={` bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col ml-1 mr-1 justify-between ${
+                  width < 1095 ? "w-full gap-2" : "w-2/5 gap-0"
                 }`}
               >
-                <div
-                  className={`w-1/2 flex flex-row  items-center ${
-                    width < 1095 ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <p
-                    className="font-semibold italic text-[#475467] text-sm cursor-pointer"
-                    onClick={handleClearAllsurgery}
-                  >
-                    CLEAR ALL
-                  </p>
+                {showAlert && (
+                  <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50">
+                    <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg animate-fade-in-out">
+                      Please Select Doctor
+                    </div>
+                  </div>
+                )}
+                <h2 className="font-bold text-black text-7">ASSIGN DOCTOR</h2>
+                <div className="w-full">
+                  <div className="w-[40%] flex flex-row justify-between items-center">
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTermdoc}
+                      onChange={(e) => setSearchTermdoc(e.target.value)}
+                      className="px-2 py-1 text-sm w-full text-black outline-none"
+                    />
+                    <Image src={Search} alt="search" className="w-3 h-3 " />
+                  </div>
                 </div>
                 <div
-                  className={`w-1/2 flex flex-row  items-center ${
-                    width < 1095 ? "justify-start" : "justify-end"
+                  className={`w-full overflow-y-auto border rounded-md ${
+                    width < 1095 ? "h-36" : "h-[65%]"
                   }`}
                 >
-                  <p
-                    className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
-                    style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
-                    onClick={() => {
-                      if (!patient?.doctor_name) {
-                        alert("Please assign a doctor first");
-                        return;
-                      }
-                      if (!sisSubmitting) {
-                        handleAssignsurgery();
-                      } else {
-                        undefined;
-                      }
-                    }}
+                  <div className="flex flex-wrap gap-2">
+                    {doctor
+                      .filter((item) =>
+                        item.toLowerCase().includes(searchTermdoc.toLowerCase())
+                      )
+                      .map((item, index) => {
+                        const [name, designation] = item.split(" - ");
+                        const isSelected = selectedDoctor === item;
+
+                        return (
+                          <label
+                            key={index}
+                            onClick={() => handleCheckboxChangedoc(item)}
+                            className={`flex items-center gap-2 justify-center font-medium px-3 py-1 text-sm text-black cursor-pointer hover:bg-gray-50 flex-shrink-0 max-w-fit ${
+                              isSelected ? "bg-gray-100" : ""
+                            }`}
+                          >
+                            <div className="w-4 h-4 border-2 rounded-full flex items-center justify-center border-[#475467] mt-1">
+                              {isSelected && (
+                                <div className="w-2 h-2 rounded-full bg-[#005585]" />
+                              )}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-semibold">{name}</span>
+                              <span className="text-xs text-gray-500">
+                                {designation}
+                              </span>
+                            </div>
+                          </label>
+                        );
+                      })}
+                  </div>
+                </div>
+                <div className="w-full flex flex-row justify-center items-center">
+                  <div className="w-1/2 flex flex-row justify-start items-center">
+                    <p
+                      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
+                      onClick={handleClearAlldoc}
+                    >
+                      CLEAR SELECTION
+                    </p>
+                  </div>
+                  <div className="w-1/2 flex flex-row justify-end items-center">
+                    <p
+                      className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
+                      style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
+                      onClick={!isSubmitting ? handleAssigndoc : undefined}
+                    >
+                      {isSubmitting ? "ASSIGNING..." : "ASSIGN"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div
+                className={`bg-white shadow-lg rounded-2xl px-4 py-2 flex flex-col ml-1 mr-1 justify-between ${
+                  width < 1095 ? "w-full gap-4" : "w-1/5 gap-4"
+                }`}
+              >
+                <h2 className="font-bold text-black text-7 w-full text-center">
+                  SURGERY SCHEDULER
+                </h2>
+                <div className="w-full flex flex-col gap-6">
+                  <div
+                    className={`w-full flex flex-row  ${
+                      width < 1095 ? "gap-10" : ""
+                    }`}
                   >
-                    {sisSubmitting ? "SCHEDULING..." : "SCHEDULE"}
-                  </p>
+                    <div
+                      className={`flex flex-col ${
+                        width < 1095 ? "w-1/2 items-end" : "w-2/3"
+                      }`}
+                    >
+                      <p className="font-medium text-sm text-[#475467]">DATE</p>
+                      <p className="font-semibold text-sm italic text-[#475467]">
+                        {selectedDatesurgery
+                          ? selectedDatesurgery.split("-").reverse().join("/")
+                          : "dd/mm/yyyy"}
+                      </p>
+                    </div>
+                    <div
+                      className={`flex flex-col  relative gap-4 ${
+                        width < 1095
+                          ? "w-1/2 justify-center items-start"
+                          : "w-1/3 justify-center items-center"
+                      }`}
+                    >
+                      <input
+                        type="date"
+                        ref={dateInputRefsurgery}
+                        className="absolute opacity-0 pointer-events-none"
+                        onChange={handleDateChangesurgery}
+                      />
+                      <Image
+                        src={Bigcalendar}
+                        alt="clock"
+                        className="w-8 h-8 cursor-pointer"
+                        onClick={handleCalendarClick}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className={`w-full flex flex-row ${
+                      width < 1095 ? "gap-10" : ""
+                    }`}
+                  >
+                    <div
+                      className={`flex flex-col ${
+                        width < 1095 ? "w-1/2 items-end" : "w-2/3"
+                      }`}
+                    >
+                      <p className="font-medium text-sm text-[#475467]">TIME</p>
+                      <p className="font-semibold text-sm italic text-[#475467]">
+                        {selectedTime ? selectedTime : "HH:MM"}
+                      </p>
+                    </div>
+                    <div
+                      className={`flex flex-col relative gap-4 ${
+                        width < 1095
+                          ? "w-1/2 justify-center items-start"
+                          : "w-1/3 justify-center items-center"
+                      }`}
+                    >
+                      <input
+                        type="time"
+                        ref={timeInputRef}
+                        className="absolute opacity-0 pointer-events-none"
+                        onChange={handleTimeChange}
+                      />
+
+                      <Image
+                        src={Clock}
+                        alt="clock"
+                        className="w-8 h-8 cursor-pointer"
+                        onClick={handleClockClick}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {warning && (
+                  <div className="fixed top-8 left-1/2 transform -translate-x-1/2 z-50">
+                    <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-6 py-3 rounded-lg shadow-lg animate-fade-in-out">
+                      {warning}
+                    </div>
+                  </div>
+                )}
+                <div
+                  className={`w-full flex flex-row justify-center items-center ${
+                    width < 1095 ? "gap-10" : ""
+                  }`}
+                >
+                  <div
+                    className={`w-1/2 flex flex-row  items-center ${
+                      width < 1095 ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <p
+                      className="font-semibold italic text-[#475467] text-sm cursor-pointer"
+                      onClick={handleClearAllsurgery}
+                    >
+                      CLEAR ALL
+                    </p>
+                  </div>
+                  <div
+                    className={`w-1/2 flex flex-row  items-center ${
+                      width < 1095 ? "justify-start" : "justify-end"
+                    }`}
+                  >
+                    <p
+                      className="font-semibold rounded-full px-3 py-[1px] cursor-pointer text-center text-white text-sm border-[#005585] border-2"
+                      style={{ backgroundColor: "rgba(0, 85, 133, 0.9)" }}
+                      onClick={() => {
+                        if (!patient?.doctor_name) {
+                          alert("Please assign a doctor first");
+                          return;
+                        }
+                        if (!sisSubmitting) {
+                          handleAssignsurgery();
+                        } else {
+                          undefined;
+                        }
+                      }}
+                    >
+                      {sisSubmitting ? "SCHEDULING..." : "SCHEDULE"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div
-            className={`w-full  flex  gap-4 ${
-              width < 760 ? "h-fit" : "h-[45%] mt-2"
-            }
+            <div
+              className={`w-full  flex  gap-4 ${
+                width < 760 ? "h-fit" : "h-[45%] mt-2"
+              }
             ${
               width < 970 ? "flex-col justify-center items-center" : "flex-row"
             }`}
-          >
-            <div
-              className={`bg-white rounded-2xl px-4 py-4 flex flex-col gap-4 shadow-lg ${
-                width < 970 ? "w-full" : "w-[55%]"
-              }`}
             >
-              <p className="w-full font-bold text-[#005585] tracking-[6px]">
-                PATIENT REPORTED OUTCOMES
-              </p>
+              <div
+                className={`bg-white rounded-2xl px-4 py-4 flex flex-col gap-4 shadow-lg ${
+                  width < 970 ? "w-full" : "w-[55%]"
+                }`}
+              >
+                <p className="w-full font-bold text-[#005585] tracking-[6px]">
+                  PATIENT REPORTED OUTCOMES
+                </p>
 
-              <div className="w-full overflow-x-auto">
-                <table className="min-w-full table-fixed">
-                  <thead className="bg-[#D9D9D9] text-[#475467] text-[14px] font-medium text-center">
-                    <tr>
-                      {columns.map((col, idx) => (
-                        <th key={idx} className="px-4 py-1.5 text-center">
-                          {col}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white text-[14px] font-semibold">
-                    {data.length > 0 ? (
-                      data.map((row, idx) => (
-                        <tr key={idx}>
-                          <td className="px-4 py-2 text-[#1F2937]">
-                            {row.label}
-                          </td>
-                          {row.values.map((val, vIdx) => (
-                            <td
-                              key={vIdx}
-                              className="px-4 py-3 text-center"
-                              style={{ color: getColor(val) }}
-                            >
-                              {val}
-                            </td>
-                          ))}
-                        </tr>
-                      ))
-                    ) : (
+                <div className="w-full overflow-x-auto">
+                  <table className="min-w-full table-fixed">
+                    <thead className="bg-[#D9D9D9] text-[#475467] text-[14px] font-medium text-center">
                       <tr>
-                        <td
-                          colSpan={columns.length}
-                          className="px-4 py-4 text-center text-[#9CA3AF]"
-                        >
-                          No questionnaires answered
-                        </td>
+                        {columns.map((col, idx) => (
+                          <th key={idx} className="px-4 py-1.5 text-center">
+                            {col}
+                          </th>
+                        ))}
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white text-[14px] font-semibold">
+                      {data.length > 0 ? (
+                        data.map((row, idx) => (
+                          <tr key={idx}>
+                            <td className="px-4 py-2 text-[#1F2937]">
+                              {row.label}
+                            </td>
+                            {row.values.map((val, vIdx) => (
+                              <td
+                                key={vIdx}
+                                className="px-4 py-3 text-center"
+                                style={{ color: getColor(val) }}
+                              >
+                                {val}
+                              </td>
+                            ))}
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={columns.length}
+                            className="px-4 py-4 text-center text-[#9CA3AF]"
+                          >
+                            No questionnaires answered
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-
-            <div
-              className={`bg-white rounded-2xl px-4 py-4 flex flex-col justify-between shadow-lg ${
-                width < 970 ? "w-full gap-4" : "w-[45%]"
-              }`}
-            >
-              <p className="w-full font-bold text-black">SURGERY DETAILS</p>
 
               <div
-                className={`w-full flex ${width < 530 ? "flex-col gap-4" : "flex-row"}`}
+                className={`bg-white rounded-2xl px-4 py-4 flex flex-col justify-between shadow-lg ${
+                  width < 970 ? "w-full gap-4" : "w-[45%]"
+                }`}
               >
+                <p className="w-full font-bold text-black">SURGERY DETAILS</p>
+
                 <div
-                  className={`flex flex-row ${width < 530 ? "w-full" : "w-[60%]"}`}
+                  className={`w-full flex ${width < 530 ? "flex-col gap-4" : "flex-row"}`}
                 >
-                  <div className="w-1/2 flex flex-col">
-                    <p className="font-semibold text-[#475467] text-sm">
-                      DATE OF SURGERY
-                    </p>
-                    <p className="font-medium italic text-[#475467] text-sm">
-                      {(() => {
-                        const rawDate = patient?.surgery_scheduled?.date;
+                  <div
+                    className={`flex flex-row ${width < 530 ? "w-full" : "w-[60%]"}`}
+                  >
+                    <div className="w-1/2 flex flex-col">
+                      <p className="font-semibold text-[#475467] text-sm">
+                        DATE OF SURGERY
+                      </p>
+                      <p className="font-medium italic text-[#475467] text-sm">
+                        {(() => {
+                          const rawDate = patient?.surgery_scheduled?.date;
 
-                        if (!rawDate || rawDate === "0001-01-01") {
-                          return "dd/mm/yyyy";
-                        }
+                          if (!rawDate || rawDate === "0001-01-01") {
+                            return "dd/mm/yyyy";
+                          }
 
-                        const date = new Date(rawDate);
-                        if (isNaN(date)) {
-                          return "Invalid date";
-                        }
+                          const date = new Date(rawDate);
+                          if (isNaN(date)) {
+                            return "Invalid date";
+                          }
 
-                        return date.toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                        });
-                      })()}
-                    </p>
+                          return date.toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          });
+                        })()}
+                      </p>
+                    </div>
+                    <div className="w-1/2 flex flex-col justify-end items-center">
+                      <p className="font-semibold text-[#475467] text-sm">
+                        SURGEON
+                      </p>
+                      <p className="font-medium italic text-[#475467] text-sm">
+                        {patient?.post_surgery_details?.surgeon ||
+                          "Not Available"}
+                      </p>
+                    </div>
                   </div>
-                  <div className="w-1/2 flex flex-col justify-end items-center">
+
+                  <div
+                    className={`flex flex-col ${width < 530 ? "w-full" : "w-[40%]"}`}
+                  >
                     <p className="font-semibold text-[#475467] text-sm">
-                      SURGEON
+                      SURGERY NAME
                     </p>
                     <p className="font-medium italic text-[#475467] text-sm">
-                      {patient?.post_surgery_details?.surgeon ||
+                      {patient?.post_surgery_details?.surgery_name ||
                         "Not Available"}
                     </p>
                   </div>
                 </div>
 
-                <div
-                  className={`flex flex-col ${width < 530 ? "w-full" : "w-[40%]"}`}
-                >
+                <div className="w-full flex flex-col">
                   <p className="font-semibold text-[#475467] text-sm">
-                    SURGERY NAME
-                  </p>
-                  <p className="font-medium italic text-[#475467] text-sm">
-                    {patient?.post_surgery_details?.surgery_name ||
-                      "Not Available"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="w-full flex flex-col">
-                <p className="font-semibold text-[#475467] text-sm">
-                  PROCEDURE
-                </p>
-                <p className="font-medium text-[#475467] text-sm">
-                  {patient?.post_surgery_details?.procedure?.toLowerCase() ||
-                    "Not Available"}
-                </p>
-              </div>
-
-              <div
-                className={`w-full flex ${width < 570 ? "flex-col gap-4" : "flex-row"}`}
-              >
-                <div
-                  className={`flex flex-col ${width < 570 ? "w-full" : "w-[50%]"}`}
-                >
-                  <p className="font-semibold text-[#475467] text-sm">
-                    IMPLANT
+                    PROCEDURE
                   </p>
                   <p className="font-medium text-[#475467] text-sm">
-                    {patient?.post_surgery_details?.implant || "Not Available"}
-                  </p>
-                </div>
-                <div
-                  className={`flex flex-col ${width < 570 ? "w-full" : "w-[50%]"}`}
-                >
-                  <p className="font-semibold text-[#475467] text-sm">
-                    TECHNOLOGY
-                  </p>
-                  <p className="font-medium italic text-[#475467] text-sm">
-                    {patient?.post_surgery_details?.technology ||
+                    {patient?.post_surgery_details?.procedure?.toLowerCase() ||
                       "Not Available"}
                   </p>
+                </div>
+
+                <div
+                  className={`w-full flex ${width < 570 ? "flex-col gap-4" : "flex-row"}`}
+                >
+                  <div
+                    className={`flex flex-col ${width < 570 ? "w-full" : "w-[50%]"}`}
+                  >
+                    <p className="font-semibold text-[#475467] text-sm">
+                      IMPLANT
+                    </p>
+                    <p className="font-medium text-[#475467] text-sm">
+                      {patient?.post_surgery_details?.implant ||
+                        "Not Available"}
+                    </p>
+                  </div>
+                  <div
+                    className={`flex flex-col ${width < 570 ? "w-full" : "w-[50%]"}`}
+                  >
+                    <p className="font-semibold text-[#475467] text-sm">
+                      TECHNOLOGY
+                    </p>
+                    <p className="font-medium italic text-[#475467] text-sm">
+                      {patient?.post_surgery_details?.technology ||
+                        "Not Available"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
-      </div>
-    ) : (
-      <p>Loading patient data...</p>
-    )}
-
-</>
-
+      ) : (
+        <p>Loading patient data...</p>
+      )}
+    </>
   );
 };
 

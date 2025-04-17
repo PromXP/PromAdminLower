@@ -315,6 +315,7 @@ const page = ({
     });
   });
 
+
   return (
     <>
       <div className="flex flex-col md:flex-row w-[95%] mx-auto mt-4 items-center justify-between">
@@ -611,10 +612,11 @@ const page = ({
                       {patient.questionnaire_assigned?.length === 0
                         ? "NOT ASSIGNED"
                         : patient.questionnaire_assigned.every(
-                              (q) => q.completed === 0
+                              (q) => q.completed === 1
                             )
-                          ? "PENDING"
-                          : "COMPLETED"}
+                          ? "COMPLETED"
+                          : "PENDING"}
+                          
                     </div>
                   </div>
 
