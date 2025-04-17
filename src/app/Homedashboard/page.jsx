@@ -298,6 +298,7 @@ const page = ({
     patient.questionnaire_assigned?.forEach((q) => {
       // Convert the deadline from UTC to YYYY-MM-DD format
       const deadlineInDateFormat = convertToDateString(q.deadline);
+      console.log("Deadline", deadlineInDateFormat);
 
       // Check if the selected date matches and if the questionnaire is incomplete
       if (
@@ -736,7 +737,7 @@ const page = ({
             <div className="w-full h-full bg-white shadow-md rounded-xl flex flex-col gap-2 items-center justify-start p-3">
               <div className="w-full flex flex-row justify-between items-center">
                 <p className="text-black text-lg font-semibold">
-                  Patients Progress
+                  Patients Compliance
                 </p>
                 <div
                   className="relative cursor-pointer"
@@ -765,20 +766,21 @@ const page = ({
               {width >= 1272 && (
                 <div className="w-full h-[90%] flex flex-row justify-start gap-2">
                   <div className="justify-start grid grid-cols-2  w-5/6 h-full overflow-y-scroll flex-grow ">
-                    {displayedPatients.map((item, index) => (
-                      <div
-                        key={index}
-                        onClick={
-                          item.questionnaire_assigned?.filter(
-                            (q) => q.completed === 0
-                          ).length > 0
-                            ? () => {
-                                setSelectedPatient(item);
-                                setIsOpenrem(true);
-                              }
-                            : undefined
-                        }
-                        className={`w-[100px] h-37 bg-white shadow-md rounded-xl p-2.5 m-2 relative flex flex-col justify-between 
+                    {displayedPatients.length > 0 ? (
+                      displayedPatients.map((item, index) => (
+                        <div
+                          key={index}
+                          onClick={
+                            item.questionnaire_assigned?.filter(
+                              (q) => q.completed === 0
+                            ).length > 0
+                              ? () => {
+                                  setSelectedPatient(item);
+                                  setIsOpenrem(true);
+                                }
+                              : undefined
+                          }
+                          className={`w-[100px] h-37 bg-white shadow-md rounded-xl p-2.5 m-2 relative flex flex-col justify-between 
                        ${
                          item.questionnaire_assigned?.filter(
                            (q) => q.completed === 0
@@ -786,52 +788,57 @@ const page = ({
                            ? "shadow-lg shadow-red-500 cursor-pointer"
                            : "shadow-md shadow-gray-300"
                        }`}
-                      >
-                        {/* Top Right Arrow Icon */}
-                        {item.questionnaire_assigned?.filter(
-                          (q) => q.completed === 0
-                        ).length > 0 && (
-                          <ArrowUpRightIcon
-                            color="blue"
-                            className="w-4 h-4 top-2 right-2 absolute"
-                          />
-                        )}
+                        >
+                          {/* Top Right Arrow Icon */}
+                          {item.questionnaire_assigned?.filter(
+                            (q) => q.completed === 0
+                          ).length > 0 && (
+                            <ArrowUpRightIcon
+                              color="blue"
+                              className="w-4 h-4 top-2 right-2 absolute"
+                            />
+                          )}
 
-                        {/* Patient Name */}
-                        <p className="text-[#475467] text-base font-medium text-center mt-3">
-                          {item.first_name + " " + item.last_name}
-                        </p>
-
-                        {/* Status */}
-                        <p className="text-gray-400 text-sm font-medium text-center">
-                          {item.current_status}
-                        </p>
-
-                        {/* Completed */}
-                        <div className="mt-3 flex justify-end items-center gap-2">
-                          <p className="text-black text-[10px] font-semibold">
-                            COMPLETED
+                          {/* Patient Name */}
+                          <p className="text-[#475467] text-base font-medium text-center mt-3">
+                            {item.first_name + " " + item.last_name}
                           </p>
-                          <p className="text-green-500 text-sm font-bold">
-                            {item.questionnaire_assigned?.filter(
-                              (q) => q.completed === 1
-                            ).length || 0}
+
+                          {/* Status */}
+                          <p className="text-gray-400 text-sm font-medium text-center">
+                            {item.current_status}
                           </p>
+
+                          {/* Completed */}
+                          <div className="mt-3 flex justify-end items-center gap-2">
+                            <p className="text-black text-[10px] font-semibold">
+                              COMPLETED
+                            </p>
+                            <p className="text-green-500 text-sm font-bold">
+                              {item.questionnaire_assigned?.filter(
+                                (q) => q.completed === 1
+                              ).length || 0}
+                            </p>
+                          </div>
+
+                          {/* Pending */}
+                          <div className="flex justify-end items-center gap-2">
+                            <p className="text-black text-[10px] font-semibold">
+                              PENDING
+                            </p>
+                            <p className="text-orange-400 text-sm font-bold">
+                              {item.questionnaire_assigned?.filter(
+                                (q) => q.completed === 0
+                              ).length || 0}
+                            </p>
+                          </div>
                         </div>
-
-                        {/* Pending */}
-                        <div className="flex justify-end items-center gap-2">
-                          <p className="text-black text-[10px] font-semibold">
-                            PENDING
-                          </p>
-                          <p className="text-orange-400 text-sm font-bold">
-                            {item.questionnaire_assigned?.filter(
-                              (q) => q.completed === 0
-                            ).length || 0}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-center text-gray-500 col-span-2 font-medium text-lg">
+                        No patient pending
+                      </p>
+                    )}
                   </div>
 
                   <div className="w-1/6 ">

@@ -117,7 +117,7 @@ const page = () => {
           <PatientReport
             isOpen={isReportOpen}
             onClose={() => setIsReportOpen(false)}
-            patient={selectedPatient}
+            patient1={selectedPatient}
             doctor={doctorListreport}
           />
         );
@@ -134,7 +134,7 @@ const page = () => {
         <div className="w-full h-[65%] flex flex-col justify-center items-center gap-6 sm:gap-8 md:gap-10">
           {/* Button 1 */}
           <button
-            className={`cursor-pointer p-2 rounded-lg transition-all ${
+            className={`cursor-pointer p-2 rounded-lg transition-all invisible ${
               selected === 0
                 ? "bg-white/40 backdrop-blur-md shadow-lg border border-white/30"
                 : "opacity-100"

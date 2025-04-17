@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useWebSocket } from "../context/WebSocketContext";
+import axios from "axios";
 import Image from "next/image";
 
 import { API_URL } from "../libs/global";
@@ -33,10 +34,75 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-const page = ({ isOpen, onClose, patient, doctor }) => {
+const page = ({ isOpen, onClose, patient1, doctor }) => {
   // const parsedUser = JSON.parse(patient);
 
+  const useWindowSize = () => {
+    const [size, setSize] = useState({
+      width: 0,
+      height: 0,
+    });
 
+    useEffect(() => {
+      const updateSize = () => {
+        setSize({
+          width: window.innerWidth,
+          height: window.innerHeight,
+        });
+      };
+
+      updateSize(); // set initial size
+      window.addEventListener("resize", updateSize);
+      return () => window.removeEventListener("resize", updateSize);
+    }, []);
+
+    return size;
+  };
+
+  const { width, height } = useWindowSize();
+  // console.log("Screen Width:", width, "Screen Height:", height);
+
+
+  console.log("Patient"+patient1?.uhid+" "+patient1?.password)
+
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("uhid", patient1.uhid);
+    sessionStorage.setItem("password", patient1.password);
+  }
+
+  const [patient, setuserdata] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const uid = sessionStorage.getItem("uhid");
+      const pass = sessionStorage.getItem("password");
+      console.log("user from localStorage1 :", uid+" "+pass);
+
+      if (uid && pass) {
+
+        console.log("user from localStorage 2:", uid+" "+pass);
+
+        // Attempt to log in again using the stored credentials
+        const loginWithStoredUser = async () => {
+          try {
+            const response = await axios.post(API_URL + "login", {
+              identifier: uid,
+              password: pass,
+              role: "patient", // Assuming role is stored and needed
+            });
+
+            setuserdata(response.data.user); // Store the full response data (e.g., tokens)
+            console.log("API Response:", response.data.user);
+          } catch (error) {
+            console.error("Login failed with stored credentials", error);
+          }
+        };
+
+        // Call login function
+        loginWithStoredUser();
+      }
+    }
+  }, []);
 
   console.log("Surgery date " + patient?.surgery_scheduled?.date);
 
@@ -66,31 +132,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
   const latestPeriod = getLatestPeriod(patient?.questionnaire_assigned);
   console.log("Latest period:", patient?.questionnaire_assigned);
 
-  const useWindowSize = () => {
-    const [size, setSize] = useState({
-      width: 0,
-      height: 0,
-    });
-
-    useEffect(() => {
-      const updateSize = () => {
-        setSize({
-          width: window.innerWidth,
-          height: window.innerHeight,
-        });
-      };
-
-      updateSize(); // set initial size
-      window.addEventListener("resize", updateSize);
-      return () => window.removeEventListener("resize", updateSize);
-    }, []);
-
-    return size;
-  };
-
-  const { width, height } = useWindowSize();
-  // console.log("Screen Width:", width, "Screen Height:", height);
-
+  
   const [opendrop, setOpendrop] = useState(false);
   const [selectedOptiondrop, setSelectedOptiondrop] = useState("Period");
 
@@ -192,7 +234,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     setWarning(""); // Clear any existing warning
 
     const payload = {
-      uhid: patient.uhid,
+      uhid: patient?.uhid,
       questionnaire_assigned: selectedItems.map((item) => ({
         name: item,
         period: selectedOptiondrop,
@@ -273,7 +315,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: patient.email,
+          email: patient?.email,
           subject: "New Questionnaire Assigned",
           message: "Questionnaire Assigned",
         }),
@@ -312,9 +354,9 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     }
 
     const payload = {
-      uhid: patient.uhid,
-      email: patient.email,
-      phone_number: patient.phone_number || "N/A",
+      uhid: patient?.uhid,
+      email: patient?.email,
+      phone_number: patient?.phone_number || "N/A",
       message: `Questionaire Assigned`,
     };
 
@@ -372,7 +414,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     }
 
     const payload = {
-      uhid: patient.uhid,
+      uhid: patient?.uhid,
       doctor_assigned: doctorName,
     };
     console.log("Doctor assign " + payload);
@@ -478,7 +520,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
     }
 
     const payload = {
-      uhid: patient.uhid,
+      uhid: patient?.uhid,
       surgery_scheduled: {
         date: selectedDatesurgery,
         time: selectedTime,
@@ -528,7 +570,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
   if (patient?.questionnaire_scores) {
     const scoreMap = {};
 
-    patient.questionnaire_scores.forEach((scoreEntry) => {
+    patient?.questionnaire_scores.forEach((scoreEntry) => {
       const scoreName = scoreEntry.name;
       const period = periodMap[scoreEntry.period] || scoreEntry.period;
       const score = scoreEntry.score[0];
@@ -565,13 +607,15 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
   if (!isOpen) return null;
 
   return (
-
+    <>
+    {patient ? (
       <div
         className={`
           h-full w-full flex flex-col items-center
           ${width < 950 ? "gap-4 justify-center" : "justify-center"}
         `}
       >
+       
         <div
           className={`w-full bg-white rounded-2xl p-4  overflow-y-auto overflow-x-hidden h-full ${
             width < 1095 ? "flex flex-col gap-4" : ""
@@ -648,7 +692,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                               width < 530 ? "text-start" : ""
                             }`}
                           >
-                            {patient.first_name + " " + patient.last_name}
+                            {patient?.first_name + " " + patient?.last_name}
                           </p>
                         </div>
                         <div
@@ -664,14 +708,14 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                             }
                           w-1/2`}
                           >
-                            {patient.age}, {patient.gender}
+                            {patient?.age}, {patient?.gender}
                           </p>
                           <div
                             className={`text-sm font-normal font-poppins text-[#475467] w-1/2 ${
                               width < 530 ? "text-center" : ""
                             }`}
                           >
-                            UHID {patient.uhid}
+                            UHID {patient?.uhid}
                           </div>
                         </div>
                       </div>
@@ -697,7 +741,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                             BMI
                           </p>
                           <p className="text-[#04CE00] font-bold text-6">
-                            {patient.bmi}
+                            {patient?.bmi}
                           </p>
                         </div>
                         <div
@@ -711,7 +755,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                             DOCTOR ASSIGNED
                           </p>
                           <p className="text-black font-bold text-6">
-                            {patient.doctor_name ? patient.doctor_name : "-"}
+                            {patient?.doctor_name ? patient?.doctor_name : "-"}
                           </p>
                         </div>
                         <div
@@ -725,7 +769,7 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
                             STATUS
                           </p>
                           <p className="text-[#FFB978] font-bold text-6">
-                            {patient.current_status || "NOT YET UPDATED"}
+                            {patient?.current_status || "NOT YET UPDATED"}
                           </p>
                         </div>
                       </div>
@@ -1296,7 +1340,13 @@ const page = ({ isOpen, onClose, patient, doctor }) => {
             </div>
           </div>
         </div>
+        
       </div>
+    ) : (
+      <p>Loading patient data...</p>
+    )}
+
+</>
 
   );
 };
